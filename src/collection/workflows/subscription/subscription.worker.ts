@@ -5,21 +5,24 @@ import {
   SendReminderEmailActivity,
   SendWelcomeEmailActivity,
 } from './activities';
-import { CollectionModule } from '../../collection.module';
-import { NestFactory } from '@nestjs/core';
 
-async function runWorker() {
-  const app = await NestFactory.createApplicationContext(CollectionModule);
-  const sendWelcomeEmailActivity = app.get(SendWelcomeEmailActivity);
-  const chargeSubscriptionActivity = app.get(ChargeSubscriptionActivity);
-  const sendEndOfSubscriptionEmailActivity = app.get(
+import { NestApplicationContext, Reflector } from '@nestjs/core';
+
+export const subscriptionWorker = async (
+  app: NestApplicationContext,
+): Promise<void> => {
+  const activities = createActivityBindings(app, [
+    SendWelcomeEmailActivity,
+    SendReminderEmailActivity,
     SendEndOfSubscriptionEmailActivity,
-  );
-  const sendReminderEmailActivity = app.get(SendReminderEmailActivity);
+    ChargeSubscriptionActivity,
+  ]);
+
   const connection = await NativeConnection.connect({
     address: 'localhost:7233',
     // TLS and gRPC metadata configuration goes here.
   });
+
   // Step 2: Register Workflows and Activities with the Worker.
   const worker = await Worker.create({
     connection,
@@ -27,31 +30,36 @@ async function runWorker() {
     taskQueue: 'default',
     // Workflows are registered using a path as they run in a separate JS context.
     workflowsPath: require.resolve('./subscription.workflow'),
-    activities: {
-      sendWelcomeEmail: sendWelcomeEmailActivity.sendWelcomeEmail.bind(
-        sendWelcomeEmailActivity,
-      ),
-      sendReminderEmail: sendReminderEmailActivity.sendReminderEmail.bind(
-        sendReminderEmailActivity,
-      ),
-      sendEndOfSubscriptionEmail:
-        sendEndOfSubscriptionEmailActivity.sendEndOfSubscriptionEmail.bind(
-          sendEndOfSubscriptionEmailActivity,
-        ),
-      chargeSubscription: chargeSubscriptionActivity.chargeSubscription.bind(
-        chargeSubscriptionActivity,
-      ),
-    },
+    activities: activities,
   });
-  //   const worker = await Worker.create({
-  //     workflowsPath: require.resolve('./subscription.workflow'),
-  //     activities,
-  //     taskQueue: 'subscription-task-queue',
-  //   });
-  await worker.run();
-}
 
-runWorker().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+  await worker.run();
+};
+
+function createActivityBindings(
+  app: NestApplicationContext,
+  activityClasses: any[],
+): Record<string, any> {
+  const activities = {};
+  const reflector = new Reflector();
+
+  activityClasses.forEach((activityClass) => {
+    const activityInstance = app.get(activityClass);
+    Object.getOwnPropertyNames(Object.getPrototypeOf(activityInstance))
+      .filter((prop) => {
+        const isFunction = typeof activityInstance[prop] === 'function';
+        const isConstructor = prop === 'constructor';
+        const hasActivityDecorator = reflector.get(
+          '_temporal_module_activity',
+          activityInstance[prop],
+        );
+        return isFunction && !isConstructor && hasActivityDecorator;
+      })
+      .forEach((methodName) => {
+        activities[methodName] =
+          activityInstance[methodName].bind(activityInstance);
+      });
+  });
+
+  return activities;
+}

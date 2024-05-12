@@ -32,9 +32,11 @@ export async function subscriptionWorkflow(
 
   for (let month = 1; month <= totalMonths; month++) {
     await chargeSubscription(email);
-    await sendReminderEmail(email);
 
     if (month < totalMonths) {
+      if (month != 1) {
+        await sendReminderEmail(email);
+      }
       await sleep('5s'); // Wait for 30 days before the next charge, 5s for testing purposes
     }
   }

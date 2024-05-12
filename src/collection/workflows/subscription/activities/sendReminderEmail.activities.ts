@@ -12,9 +12,13 @@ export class SendReminderEmailActivity {
 
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
-    console.log(`reminder email sent to ${email}...`);
+    console.log(`reminder-${this.sampleWorker()} email sent to ${email}...`);
 
     return 'reminder email sent';
+  }
+
+  sampleWorker(): string {
+    return 'Sample Worker';
   }
 }
 

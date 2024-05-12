@@ -7,6 +7,8 @@ import {
   SendReminderEmailActivity,
   SendWelcomeEmailActivity,
 } from './workflows/subscription/activities';
+import { PaymentModule } from '../payment/payment.module';
+// import { PaymentService } from '../payment/payment.service';
 
 @Module({
   providers: [
@@ -22,23 +24,6 @@ import {
     SendWelcomeEmailActivity,
   ],
   controllers: [CollectionController],
-  imports: [
-    // TemporalModule.registerWorker({
-    //   workerOptions: {
-    //     taskQueue: 'subscription-task-queue',
-    //     workflowsPath: require.resolve(
-    //       './workflows/subscription/subscription.workflow',
-    //     ),
-    //   },
-    //   activityClasses: [
-    //     SendWelcomeEmailActivity,
-    //     SendReminderEmailActivity,
-    //     SendEndOfSubscriptionEmailActivity,
-    //     ChargeSubscriptionActivity,
-    //   ],
-    // }),
-
-    TemporalModule.registerClient(),
-  ],
+  imports: [TemporalModule.registerClient(), PaymentModule],
 })
 export class CollectionModule {}
