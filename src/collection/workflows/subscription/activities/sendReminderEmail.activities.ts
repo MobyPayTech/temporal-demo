@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Activities, Activity } from 'nestjs-temporal';
+import { Activity } from '../../../../shared/activity.decorator';
 
 @Injectable()
-@Activities()
 export class SendReminderEmailActivity {
   constructor() {}
 
@@ -20,8 +19,4 @@ export class SendReminderEmailActivity {
   sampleWorker(): string {
     return 'Sample Worker';
   }
-}
-
-export interface ISendReminderEmailActivity {
-  sendReminderEmail(email: string): Promise<string>;
 }

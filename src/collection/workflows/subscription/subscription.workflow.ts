@@ -1,26 +1,13 @@
 import { proxyActivities, sleep } from '@temporalio/workflow';
-import {
-  IChargeSubscriptionActivity,
-  ISendEndOfSubscriptionEmailActivity,
-  ISendReminderEmailActivity,
-  ISendWelcomeEmailActivity,
-} from './activities';
+import { SubscriptionWorkflowActivities } from './subscription.interface';
 
-const { sendEndOfSubscriptionEmail } =
-  proxyActivities<ISendEndOfSubscriptionEmailActivity>({
-    startToCloseTimeout: '1 minute',
-  });
-
-const { sendWelcomeEmail } = proxyActivities<ISendWelcomeEmailActivity>({
+const {
+  sendEndOfSubscriptionEmail,
+  sendReminderEmail,
+  sendWelcomeEmail,
+  chargeSubscription,
+} = proxyActivities<SubscriptionWorkflowActivities>({
   startToCloseTimeout: '1 minute',
-});
-
-const { sendReminderEmail } = proxyActivities<ISendReminderEmailActivity>({
-  startToCloseTimeout: '1 minute',
-});
-
-const { chargeSubscription } = proxyActivities<IChargeSubscriptionActivity>({
-  startToCloseTimeout: '5 minute',
 });
 
 export async function subscriptionWorkflow(
@@ -31,13 +18,14 @@ export async function subscriptionWorkflow(
   await sendWelcomeEmail(email);
 
   for (let month = 1; month <= totalMonths; month++) {
+    if (month != 1 && month < totalMonths) {
+      await sendReminderEmail(email);
+      await sleep('2s'); // sleep for day, 2s for testing
+    }
     await chargeSubscription(email);
 
     if (month < totalMonths) {
-      if (month != 1) {
-        await sendReminderEmail(email);
-      }
-      await sleep('5s'); // Wait for 30 days before the next charge, 5s for testing purposes
+      await sleep('5s'); // Wait for 29 days before the next charge, 5s for testing purposes
     }
   }
 

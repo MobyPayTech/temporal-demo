@@ -9,12 +9,12 @@ export class CollectionController {
   ) {}
 
   @Get()
-  async findAll(): Promise<string> {
+  async createFakeSubscription(): Promise<string> {
     await this.temporalClient.start('subscriptionWorkflow', {
       args: ['aimen@gmail.com', 6],
       taskQueue: 'default',
       workflowId: 'user-subscription-' + Math.floor(Math.random() * 1000),
     });
-    return 'This action returns all collection';
+    return 'Created Fake Subscription';
   }
 }

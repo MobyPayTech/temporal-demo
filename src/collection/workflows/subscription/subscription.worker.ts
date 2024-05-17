@@ -7,6 +7,7 @@ import {
 } from './activities';
 
 import { NestApplicationContext, Reflector } from '@nestjs/core';
+import { TEMPORAL_ACTIVITY } from '../../../shared/activity.decorator';
 
 export const subscriptionWorker = async (
   app: NestApplicationContext,
@@ -31,6 +32,7 @@ export const subscriptionWorker = async (
     // Workflows are registered using a path as they run in a separate JS context.
     workflowsPath: require.resolve('./subscription.workflow'),
     activities: activities,
+    // workflowBundle
   });
 
   await worker.run();
@@ -50,7 +52,7 @@ function createActivityBindings(
         const isFunction = typeof activityInstance[prop] === 'function';
         const isConstructor = prop === 'constructor';
         const hasActivityDecorator = reflector.get(
-          '_temporal_module_activity',
+          TEMPORAL_ACTIVITY,
           activityInstance[prop],
         );
         return isFunction && !isConstructor && hasActivityDecorator;

@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Activities, Activity } from 'nestjs-temporal';
+import { Activity } from '../../../../shared/activity.decorator';
 
 @Injectable()
-@Activities()
 export class SendEndOfSubscriptionEmailActivity {
   constructor() {}
 
@@ -16,8 +15,4 @@ export class SendEndOfSubscriptionEmailActivity {
 
     return 'end of subscription email sent';
   }
-}
-
-export interface ISendEndOfSubscriptionEmailActivity {
-  sendEndOfSubscriptionEmail(email: string): Promise<string>;
 }
