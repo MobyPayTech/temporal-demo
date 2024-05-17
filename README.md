@@ -45,29 +45,14 @@ $ pnpm run start:dev
 $ pnpm run start:prod
 ```
 
-## Test
+## Start Temporal worker
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+$ pnpm run start:worker "worker_name"
 ```
 
-## Support
+## Local Development Setup for Temporal
+For local development installation of Temporal, please refer to the Temporal Documentation.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+## Run the test
+Visit localhost:3000/subscription and then open up the Temporal web UI to see the result.
